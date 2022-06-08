@@ -1,0 +1,39 @@
+- name: New AKS Cluster
+  hosts: localhost
+  connection: local
+  vars:
+    AKS_resource_group: AKSTest
+    AKS_location: "East US"
+    aks_name: aksclus
+    username: vmadmin
+    ssh_pub_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDwbXYkttE1NVF71vMhy2uFevlEcf41aedIjg5yNDqXgP4YDud2Cfj0BCw8Y6j/kFJDsByP25OQpNdMBmmSt/ohHdo1yRvlY4GkfJ7J8paWT9Agok7b6Dsv/w8w6bTuh5yUxyWEknJQLLLGdwPINC1J11tnlbIjhNLwTyKTJgKB82yI0SOoVH+tYJC8C+zrtws0jFIY362uhjtizRfZi2t630udxa+XsUSx1InHg12mkKhScshbgi+zYT5GOcU460TbHuXGbO8DQFiVLkIzz2CKL8RLJOocK2X3M+nBdMH6bBC01EtB4LZTDf34pvLhJw44w18suu5UKx1XEif4Il4l vmadmin@aserver1"
+    client_id: "db554056-1270-41b7-9c89-483f9c4de938"
+    client_secret: "QXP8Q~i1wCf2agNnmZo0QUS1PZ50wKKRQAsiHaVx"
+    k8s_version: "1.21.9"
+
+  tasks:
+  - name: Create resource group
+    azure_rm_resourcegroup:
+      name: "{{ AKS_resource_group }}"
+      location: "{{ AKS_location }}"
+  - name: Create an AKS cluster
+    azure_rm_aks:
+      name: "{{ aks_name }}"
+      location: "{{ AKS_location }}"
+      kubernetes_version: "{{ k8s_version }}"
+      resource_group: "{{ AKS_resource_group }}"
+      dns_prefix: "mynewcluster"
+      linux_profile:
+        admin_username: "{{ username }}"
+        ssh_key: "{{ ssh_pub_key }}"
+      service_principal:
+        client_id: "{{ client_id }}"
+        client_secret: "{{ client_secret }}"
+      agent_pool_profiles:
+        - name: default
+          count: 2
+          vm_size: Standard_D2_v2
+      tags:
+        Environment: "Dev"
+        Backup: "False"
+        Client: "Mike"
